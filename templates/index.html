@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proposal Analysis</title>
+    <!-- Import Materialize CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+    <!-- Import Materialize JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <style>
+        #loader {
+            display: none;
+            position: fixed;
+            left: 50%;
+            top: 50%;
+            z-index: 999;
+            width: 100px;
+            height: 100px;
+            margin: -50px 0 0 -50px;
+            border: 16px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 16px solid #3498db;
+            width: 120px;
+            height: 120px;
+            -webkit-animation: spin 2s linear infinite;
+            animation: spin 2s linear infinite;
+        }
+
+        @-webkit-keyframes spin {
+            0% { -webkit-transform: rotate(0deg); }
+            100% { -webkit-transform: rotate(360deg); }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .card {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <nav>
+        <div class="nav-wrapper">
+            <a href="#" class="brand-logo center">CFP Analysis Tool: AI Driven Human Touch</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h2 class="center-align">CFP Analysis Tool</h2>
+        <form id="upload-form" action="/upload" method="post" enctype="multipart/form-data">
+            <div class="file-field input-field">
+                <div class="btn">
+                    <span>Upload PDF</span>
+                    <input type="file" name="proposal" accept="application/pdf" required>
+                </div>
+                <div class="file-path-wrapper">
+                    <input class="file-path validate" type="text">
+                </div>
+            </div>
+            <button class="btn waves-effect waves-light" type="submit">Upload</button>
+        </form>
+        <div class="button-container">
+            <form id="analysis-form" action="/analyze" method="post">
+                <button class="btn waves-effect waves-light" type="submit">Analyze Proposals</button>
+            </form>
+        </div>
+        <div id="results" class="section"></div>
+    </div>
+
+    <!-- Loader -->
+    <div id="loader"></div>
+
+    <script>
+        document.getElementById('analysis-form').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            document.getElementById('loader').style.display = 'block';
+            const response = await fetch('/analyze', {
+                method: 'POST'
+            });
+            const results = await response.json();
+            document.getElementById('loader').style.display = 'none';
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '';
+            results.forEach(result => {
+                const resultElement = document.createElement('div');
+                resultElement.classList.add('card', 'blue-grey', 'darken-1');
+                resultElement.innerHTML = `
+                    <div class="card-content white-text">
+                        <p><strong>Title of proposal:</strong> ${result['result']['title of proposal']}</p>
+                        <p><strong>List of key technologies:</strong> ${result['result']['list of key technologies']}</p>
+                        <p><strong>Novelty assessment:</strong> ${result['result']['novelty assessment']}</p>
+                        <p><strong>Relevance assessment to HCI:</strong> ${result['result']['relevance assessment to HCI']}</p>
+                        <p><strong>Impact assessment:</strong> ${result['result']['impact assessment']}</p>
+                        <p><strong>Potential for productization:</strong> ${result['result']['potential for productization']}</p>
+                        <p><strong>Concise summary:</strong> ${result['result']['concise summary']}</p>
+                    </div>
+                `;
+                resultsDiv.appendChild(resultElement);
+            });
+        });
+    
+        document.getElementById('upload-form').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const response = await fetch('/upload', {
+                method: 'POST',
+                body: formData
+            });
+            if (response.ok) {
+                M.toast({html: 'File uploaded successfully!'});
+            } else {
+                M.toast({html: 'File upload failed!'});
+            }
+        });
+    </script>
+    
+</body> 
+</html>
